@@ -1,0 +1,3 @@
+*.bin
+/prev_trained_model
+prev_trained_model/
