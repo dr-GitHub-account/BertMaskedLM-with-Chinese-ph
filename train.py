@@ -81,6 +81,10 @@ def parse_args():
                         help="what epoch you want to begin train model")
     parser.add_argument('--curstep',type=str, default=None, 
                         help="where step you want to begin train model")
+    
+    parser.add_argument('--outputinfo',type=str, default=None, 
+                        help="output time and num of repeat")
+    
     args = parser.parse_args()
     return args
 
@@ -102,7 +106,8 @@ logfile = args.log
 corpusname = args.trainfile.split('/')[-1]
 corpusname = corpusname.split('.')[0]
 logfile = logfile.replace('MN',args.modelname)
-logfile = logfile.replace('CN',corpusname).replace('DT',day)
+# logfile = logfile.replace('CN',corpusname).replace('DT',day)
+logfile = logfile.replace('CN',corpusname).replace('DT',args.outputinfo)
 file_handler = logging.FileHandler(filename=logfile,mode='w')
 file_handler.setLevel(logging.INFO)
 logger.addHandler(file_handler)
@@ -160,9 +165,14 @@ elif args.modelname=='bert':
                     return_dict=True)
     # 实例化BertTokenTool类对象tokenizer
     tokenizer = BertTokenTool(args.vocabpath)
+    # 默认有args.loadmodel，不进入下面的if
     if not args.loadmodel:
+        logger.info("*****Running model = BertForMaskedLM(configuration)*****")
         model = BertForMaskedLM(configuration)
+    # 默认有args.loadmodel，进入下面的else
     else:
+        logger.info("*****Running model = BertForMaskedLM.from_pretrained(args.loadmodel)*****")
+        # from_pretrained返回加载了权重的model，至此，需训练的model被定义好了
         model = BertForMaskedLM.from_pretrained(args.loadmodel)
 transfer = tokenizer.tokenizer.convert_ids_to_tokens
 
@@ -206,7 +216,8 @@ curepoch = int(args.curepoch) if args.curepoch else -1
 curstep = int(args.curstep) if args.curepoch else -1
     
 #%%
-# 
+# 此步骤会进行jieba分词与打乱顺序
+# trainset在train()函数调用时，作为corpus参数被传入
 trainset.initial()
 
 # 训练函数
@@ -244,10 +255,11 @@ def train(model,
                 loss, accuracy = calculate_loss_and_accuracy(outputs, labels=labels)
             # 默认进入下面的elif，默认modelname为'bert'
             elif modelname == 'bert':
+                # tokenizer是BertTokenTool类对象
                 # tokenizer.tokenize()定义：
                 # def tokenize(self, word_list,  p_mask:float, max_length=300, truncation=True, 
                 #              padding=True, islastone=False):
-                #     # self.tokenizer是BertTokenizer类的实例
+                #     # self.tokenizer是BertTokenizer类的实例，BertTokenizer类: Construct a BERT tokenizer. Based on WordPiece
                 #     inputs = self.tokenizer(word_list,
                 #                             return_tensors="pt",
                 #                             truncation=truncation,
@@ -267,70 +279,92 @@ def train(model,
                 #     return inputs,labels
                 inputs,labels = tokenizer.tokenize(data, max_length=maxlength, p_mask=0.15)
                 if ee == 0 and gg == 0:
+                    logger.info("*****For ee == 0, gg == 0:*****")
                     logger.info("*****inputs: {}*****".format(inputs))
                     logger.info("*****np.shape(inputs): {}*****".format(np.shape(inputs)))
+                    logger.info("*****np.shape(inputs['input_ids']): {}*****".format(np.shape(inputs['input_ids'])))
+                    logger.info("*****np.shape(inputs['token_type_ids']): {}*****".format(np.shape(inputs['token_type_ids'])))
+                    logger.info("*****np.shape(inputs['attention_mask']): {}*****".format(np.shape(inputs['attention_mask'])))
                     logger.info("*****labels: {}*****".format(labels))
                     logger.info("*****np.shape(labels): {}*****".format(np.shape(labels)))
                 
-    #             if str(device)=='cuda':
-    #                 inputs = inputs.to(device)
-    #                 labels = labels.to(device)
-    #             # 模型前向传播，返回MaskedLMOutput类对象outputs，outputs含有成员变量logits, loss
-    #             outputs = model(**inputs, labels=labels)
-    #             masked_label = labels[labels != -100]
-    #             masked_pre = outputs.logits[labels != -100].max(-1).indices
-    #             if masked_label.numel() == 0:
-    #                 accuracy = 0
-    #             else:
-    #                 accuracy = (torch.sum(masked_pre==masked_label)/masked_label.numel()).item()
-    #             loss = outputs.loss.mean() if multi_gpu else outputs.loss
-    #             if gg%(0.1*args.showstep)==9:
-    #                 info2 = bertshow_predict_vs_actual(inputs, labels, outputs)
-    #                 tb_writer.add_text('predict-vs-actural',info2,ee*len(train_iter)+gg)
-    #                 tb_writer.close()
-    #         if speci_var == 1:
-    #             model_wr = ModelWrapper(model)
-    #             if modelname == 'gpt2':
-    #                 tb_writer.add_graph(model_wr, inputs)
-    #             elif modelname == 'bert':
-    #                 tb_writer.add_graph(model_wr, inputs['input_ids'])
-    #             tb_writer.close()
-    #             speci_var = 0
-    #         runloss += loss.item()
-    #         runacc += accuracy
-    #         optimizer.state.get("")
-    #         if gg%(0.1*args.showstep)==9:
-    #             time1 = time.time()
-    #             logger.info('\t batch = %d \t loss = %.5f \t acc = %.3f \t cost_time = %.3fs'%(
-    #                          gg,loss.item(),accuracy,time1-time0))
-    #             tb_writer.add_scalar('%s-train-loss'%args.modelname,runloss/0.1/args.showstep,ee*len(train_iter)+gg)
-    #             tb_writer.add_scalar('%s-train-acc'%args.modelname,runacc/0.1/args.showstep,ee*len(train_iter)+gg)
-    #             runloss = 0.0
-    #             runacc = 0.0
-    #         optimizer.zero_grad()
-    #         loss.backward()
-    #         optimizer.step()
-    #         if gg>100:
-    #             break
+                # 默认使用gpu，进入下面的if
+                if str(device)=='cuda':
+                    inputs = inputs.to(device)
+                    labels = labels.to(device)
+                # 模型前向传播，返回MaskedLMOutput类对象outputs，outputs含有成员变量logits, loss
+                outputs = model(**inputs, labels=labels)
+                # np.shape(labels): torch.Size([batch_size, max_len])，其中被mask的token相应label不为-100
+                # 得到的masked_label为一个一维张量，如tensor([  704, 14966])，其中每一个元素都是一个mask的label的id
+                masked_label = labels[labels != -100]
+                # mask的预测结果
+                masked_pre = outputs.logits[labels != -100].max(-1).indices
+                # masked_label.numel()为一维张量masked_label中包含元素的个数，即mask的个数
+                # 如果masked_label.numel()为0则代表当前没有mask
+                if masked_label.numel() == 0:
+                    accuracy = 0
+                # 如果masked_label.numel()不为0则代表当前有mask，能够计算出一个accuracy
+                else:
+                    accuracy = (torch.sum(masked_pre==masked_label)/masked_label.numel()).item()
+                # 根据单卡还是多卡来进行处理outputs.loss，进而得到损失
+                loss = outputs.loss.mean() if multi_gpu else outputs.loss
+                # tensorboard相关
+                if gg%(0.1*args.showstep)==9:
+                    info2 = bertshow_predict_vs_actual(inputs, labels, outputs)
+                    # tb_writer.add_text('predict-vs-actural',info2,ee*len(train_iter)+gg)
+                    # tb_writer.close()
+            # tensorboard相关
+            if speci_var == 1:
+                model_wr = ModelWrapper(model)
+                if modelname == 'gpt2':
+                    pass
+                    # tb_writer.add_graph(model_wr, inputs)
+                elif modelname == 'bert':
+                    pass
+                #     tb_writer.add_graph(model_wr, inputs['input_ids'])
+                # tb_writer.close()
+                speci_var = 0
+            # 当前batch的loss累加到runloss上
+            runloss += loss.item()
+            # 当前batch的accuracy累加到runacc上
+            runacc += accuracy
+            optimizer.state.get("")
+            if gg%(0.1*args.showstep)==9:
+                time1 = time.time()
+                logger.info('\t batch = %d \t loss = %.5f \t acc = %.3f \t cost_time = %.3fs'%(
+                             gg,loss.item(),accuracy,time1-time0))
+                # tb_writer.add_scalar('%s-train-loss'%args.modelname,runloss/0.1/args.showstep,ee*len(train_iter)+gg)
+                # tb_writer.add_scalar('%s-train-acc'%args.modelname,runacc/0.1/args.showstep,ee*len(train_iter)+gg)
+                runloss = 0.0
+                runacc = 0.0
+            # 梯度设置为0
+            optimizer.zero_grad()
+            # 反向传播
+            loss.backward()
+            # 更新参数
+            optimizer.step()
+            # **************************202206121708**************************
+            if gg>100:
+                break
             
-    #         if gg % args.showstep == 0:
-    #             save_path1 = os.path.join(args.savemodel.replace('MN',args.modelname),
-    #                                       '%s_%s_%s_step_%d.bin'%(args.modelname,
-    #                                                               args.corpusname,args.mode,gg))
-    #             if hasattr(model,'module'):
-    #                 model.module.save_pretrained(save_path1)
-    #             else:
-    #                 model.save_pretrained(save_path1)
-    #     save_path2 = os.path.join(args.savemodel.replace('MN',args.modelname),
-    #                               '%s_%s_%s_epoch_%d.bin'%(args.modelname,
-    #                                                        args.corpusname,args.mode,ee))
-    #     if hasattr(model,'module'):
-    #         model.module.save_pretrained(save_path2)
-    #     else:
-    #         model.save_pretrained(save_path2)
-    #     logger.info('we get model %s'%save_path2)
+            if gg % args.showstep == 0:
+                save_path1 = os.path.join(args.savemodel.replace('MN',args.modelname),
+                                          '%s_%s_%s_step_%d.bin'%(args.modelname,
+                                                                  args.corpusname,args.mode,gg))
+                if hasattr(model,'module'):
+                    model.module.save_pretrained(save_path1)
+                else:
+                    model.save_pretrained(save_path1)
+        save_path2 = os.path.join(args.savemodel.replace('MN',args.modelname),
+                                  '%s_%s_%s_epoch_%d.bin'%(args.modelname,
+                                                           args.corpusname,args.mode,ee))
+        if hasattr(model,'module'):
+            model.module.save_pretrained(save_path2)
+        else:
+            model.save_pretrained(save_path2)
+        logger.info('we get model %s'%save_path2)
     # logger.info('tensorboard information has been recorded in %s'%tb_dir)
-    # logger.info('training done!')
+    logger.info('training done!')
 
 train(model=model, corpus=trainset)
 # tb_writer.close()

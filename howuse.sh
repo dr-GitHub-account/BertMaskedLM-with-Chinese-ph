@@ -17,6 +17,11 @@
 
 # python train.py -d=./train_data/SougouTrain.txt -b=32 -e=5 --each_steps=100000 --usegpu --device=0,1 --model_name="Sougoumodel" --vocab_path=./vocab/SougouBertVocab.txt --load_model=./model/Sougoumodel_epoch_2.bin
 
+time=$(date "+%Y%m%d%H%M%S")
+output_time=${time}
+
+for repeat in 1;
+do
 CUDA_VISIBLE_DEVICES=0 python train.py \
     --trainfile='./train_data/duie_ner_train_1_spo_noWork_text.txt' \
     --batchsize=8 \
@@ -25,7 +30,9 @@ CUDA_VISIBLE_DEVICES=0 python train.py \
     --usegpu=1 \
     --modelname='bert' \
     --vocabpath='./prev_trained_model/bert-base-chinese/vocab.txt' \
-    --loadmodel='./prev_trained_model/bert-base-chinese'
+    --loadmodel='./prev_trained_model/bert-base-chinese' \
+    --outputinfo=${output_time}_${repeat} 
+done
 
 # ====== finetune by jobdata.txt
 # python train.py -d=./train_data/jobdata_train.txt -b=16 -e=10 --each_steps=100000 --usegpu --device=0,1 --model_name="Jobdatamodel" --vocab_path=./vocab/SougouBertVocab.txt --load_model=./model/Sougoumodel_epoch_9.bin  --each_steps=1000 --log_path=./train_data/job_logger.txt
