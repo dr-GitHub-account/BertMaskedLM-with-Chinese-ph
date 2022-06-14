@@ -1,0 +1,47 @@
+*****Running model = BertForMaskedLM.from_pretrained(args.loadmodel)*****
+The Initial Date = 6-13
+bert is training which based on corpus ./train_data/duie_ner_train_1_spo_noWork_text.txt
+The log information is saved in : ./log/bert/duie_ner_train_1_spo_noWork_text_20220613094557_1_train_log.txt
+epoch = 0
+*****For ee == 0, gg == 0:*****
+*****inputs: {'input_ids': tensor([[  101,  4989, 19696,  ...,     0,     0,     0],
+        [  101,  4680, 14241,  ...,     0,     0,     0],
+        [  101,  7151, 15247,  ...,     0,     0,     0],
+        ...,
+        [  101,   936,   103,  ..., 20013,  6809,   102],
+        [  101,   103,   103,  ...,     0,     0,     0],
+        [  101,  3306, 14978,  ...,     0,     0,     0]]), 'token_type_ids': tensor([[0, 0, 0,  ..., 0, 0, 0],
+        [0, 0, 0,  ..., 0, 0, 0],
+        [0, 0, 0,  ..., 0, 0, 0],
+        ...,
+        [0, 0, 0,  ..., 0, 0, 0],
+        [0, 0, 0,  ..., 0, 0, 0],
+        [0, 0, 0,  ..., 0, 0, 0]]), 'attention_mask': tensor([[1, 1, 1,  ..., 0, 0, 0],
+        [1, 1, 1,  ..., 0, 0, 0],
+        [1, 1, 1,  ..., 0, 0, 0],
+        ...,
+        [1, 1, 1,  ..., 1, 1, 1],
+        [1, 1, 1,  ..., 0, 0, 0],
+        [1, 1, 1,  ..., 0, 0, 0]])}*****
+*****np.shape(inputs): (3,)*****
+*****np.shape(inputs['input_ids']): torch.Size([8, 128])*****
+*****np.shape(inputs['token_type_ids']): torch.Size([8, 128])*****
+*****np.shape(inputs['attention_mask']): torch.Size([8, 128])*****
+*****labels: tensor([[ -100,  -100,  -100,  ...,  -100,  -100,  -100],
+        [ -100,  -100,  -100,  ...,  -100,  -100,  -100],
+        [ -100,  -100,  -100,  ...,  -100,  -100,  -100],
+        ...,
+        [ -100,  -100, 13784,  ...,  -100,  -100,  -100],
+        [ -100,  3353, 20418,  ...,  -100,  -100,  -100],
+        [ -100,  -100,  -100,  ...,  -100,  -100,  -100]])*****
+*****np.shape(labels): torch.Size([8, 128])*****
+	 batch = 9 	 loss = 6.66752 	 acc = 0.317 	 cost_time = 3.525s
+we get model ./checkpoints/bert/bert_sougou_word_epoch_0.bin
+epoch = 1
+	 batch = 9 	 loss = 6.13119 	 acc = 0.286 	 cost_time = 11.510s
+we get model ./checkpoints/bert/bert_sougou_word_epoch_1.bin
+epoch = 2
+	 batch = 9 	 loss = 5.54724 	 acc = 0.290 	 cost_time = 19.689s
+we get model ./checkpoints/bert/bert_sougou_word_epoch_2.bin
+epoch = 3
+	 batch = 9 	 loss = 5.00229 	 acc = 0.275 	 cost_time = 27.818s

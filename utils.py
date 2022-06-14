@@ -26,6 +26,9 @@ from transformers import BertTokenizer, BertForMaskedLM
 from transformers import GPT2Config
 from transformers import GPT2LMHeadModel
 
+import logging
+logger = logging.getLogger(__name__)
+
 #%% 
 
 def calculate_loss_and_accuracy(outputs, labels):
@@ -477,6 +480,7 @@ class BertTokenTool:
                                        tokenize_chinese_chars=False,
                                        strip_accents=None,
                                        )
+        self.flag = 0
 
     def tokenize(self, word_list,  p_mask:float, max_length=300, truncation=True, 
                  padding=True, islastone=False):
@@ -494,6 +498,7 @@ class BertTokenTool:
             inputs['input_ids'],labels = self.collate_fn(inputs['input_ids'], p_mask=p_mask)
         return inputs,labels
     
+    # collate_fn()对inputs['input_ids']和label做mask
     def collate_fn(self, inputs, p_mask:float = 0.15):
         '''
             collate_fn 函数用来进一步校正数据，安装bert模型的mask原则作出masked的inputs与labels。
@@ -504,16 +509,60 @@ class BertTokenTool:
         
          # 特殊码标记，Bert.tokenizer特殊码指 '[UNK]','[CLS]','[PAD]','[SEP]','[MASK]'. 如果这个tag为特殊码，则为1，否则为0
         special_tokens_mask = [self.tokenizer.get_special_tokens_mask(val, already_has_special_tokens=True) for val in labels.tolist()]   
+        # 一个维度为torch.Size([batch_size, max_len])的张量，每句话max_len个元素中，
+        # '[UNK]','[CLS]','[PAD]','[SEP]','[MASK]'对应元素为True，其余为False
         special_tokens_mask = torch.tensor(special_tokens_mask,dtype=torch.bool)
         probability_matrix = torch.full(labels.shape, p_mask)
+        # 一个维度为torch.Size([batch_size, max_len])的张量，每句话max_len个元素中，
+        # 特殊码的位置元素为0，让特殊码一定不会变动，其余元素值为p_mask
         probability_matrix.masked_fill_(special_tokens_mask, value = 0.)  # 特殊码的位置被标记为0，让特殊码一定不会变动
+        # 一个维度为torch.Size([batch_size, max_len])的张量，每句话max_len个元素中，
+        # 被mask的位置被标记为True，其余被标记为False
         masked_indices = torch.bernoulli(probability_matrix).bool()
+        # 一个维度为torch.Size([batch_size, max_len])的张量，每句话max_len个元素中，
+        # mask掉的位置label保留，其余label设为-100
         labels[~masked_indices] = -100
+        # 一个维度为torch.Size([batch_size, max_len])的张量，每句话max_len个元素中，
+        # 真正被mask(0.8概率)的位置被标记为True，其余被标记为False
+        # &左侧部分是一个0.8概率为True，维度与labels相同的张量，与右侧进行与操作，即得到indices_replaced
         indices_replaced = torch.bernoulli(torch.full(labels.shape, 0.8)).bool() & masked_indices
+        # 将inputs(即BERT的input_ids)中，被真正mask的元素的id赋值为[MASK]对应的id
         inputs[indices_replaced] = self.tokenizer.convert_tokens_to_ids(self.tokenizer.mask_token)
+        # 一个维度为torch.Size([batch_size, max_len])的张量，每句话max_len个元素中，
+        # 被随机替换(0.15概率)的位置被标记为True，其余被标记为False
+        # 第一个&左侧部分是一个0.5概率为True，维度与labels相同的张量
+        # 第一个&右侧部分是masked_indices & ~indices_replaced，即被mask，但没有真正替换为[MASK]的，取0.5概率即(1-0.8) * 0.5 = 0.1
         indices_random = torch.bernoulli(torch.full(labels.shape, 0.5)).bool() & masked_indices & ~indices_replaced
+        # 将inputs(即BERT的input_ids)中，被随机替换的元素的id赋值为相应随机词对应的id
         random_words = torch.randint(len(self.tokenizer), labels.shape, dtype=torch.long)
         inputs[indices_random] = random_words[indices_random]
+        if self.flag == 0:
+            
+            print("*****special_tokens_mask: {}*****".format(special_tokens_mask))
+            print("*****np.shape(special_tokens_mask): {}*****".format(np.shape(special_tokens_mask)))
+            
+            print("*****probability_matrix: {}*****".format(probability_matrix))
+            print("*****np.shape(probability_matrix): {}*****".format(np.shape(probability_matrix)))
+            
+            print("*****masked_indices: {}*****".format(masked_indices))
+            print("*****np.shape(masked_indices): {}*****".format(np.shape(masked_indices)))
+            
+            print("*****labels: {}*****".format(labels))
+            print("*****np.shape(labels): {}*****".format(np.shape(labels)))
+            
+            print("*****indices_replaced: {}*****".format(indices_replaced))
+            print("*****np.shape(indices_replaced): {}*****".format(np.shape(indices_replaced)))
+            
+            print("*****indices_random: {}*****".format(indices_random))
+            print("*****np.shape(indices_random): {}*****".format(np.shape(indices_random)))
+            
+            print("*****random_words: {}*****".format(random_words))
+            print("*****np.shape(random_words): {}*****".format(np.shape(random_words)))
+            
+            print("*****inputs: {}*****".format(inputs))
+            print("*****np.shape(inputs): {}*****".format(np.shape(inputs)))
+            
+            self.flag = 1
         return inputs, labels
     
     def collate_fn2(self,inputs):
@@ -558,6 +607,7 @@ class GptTokenTool:
         return inputs, labels
     
 
+# 实例化：trainset = MyDataset(args.trainfile, n_raws=1000, shuffle=True)
 class MyDataset(Data.Dataset):
     def __init__(self, file_path, n_raws=1000, shuffle=False):
         """
@@ -592,34 +642,46 @@ class MyDataset(Data.Dataset):
                 self.samples.append(" ".join(jieba.lcut(raw.strip())))
             else:
                 break
+        # 当前self.samples列表的长度，即它包含的分句后的句子的数量
+        # (貌似self.current_sample_num就是self.n_raws？只是__getitem__()中会对self.current_sample_num进行-=操作)
         self.current_sample_num = len(self.samples)
+        # 下标的列表，下标从0取到当前self.samples列表的长度-1
         self.index = list(range(self.current_sample_num))
+        # 默认self.shuffle为True，进入下面的if，对self.samples进行随机打乱顺序
         if self.shuffle:
             random.shuffle(self.samples)
 
     def __len__(self):
         return self.total_count
 
+    # 调用一次__getitem__()函数，返回一个句子
     def __getitem__(self, item):
+        # 第一个下标
         idx = self.index[0]
+        # 第一个下标对应的分句后的句子
         sample = self.samples[idx]
         # self.index = self.index[1:]
+        # 从self.index中去除已经取了的第一个元素
         self.index = self.index[1:]
-        
+        # 当前剩余的句子数减一
         self.current_sample_num -= 1
-
+        # self.current_sample_num <= 0，memory中所有句子都已被用
         if self.current_sample_num <= 0:
             # all the samples in the memory have been used, need to get the new samples
+            # 读取接下来的self.n_raws个句子，并对其进行分词与打乱顺序
             for _ in range(self.n_raws):
                 raw = self.file_input.readline()
                 if raw:
+                    # 将当前raw进行精确模式分词(不存在冗余的分词)，得到该句分词后的结果列表，添加到self.samples列表中
                     self.samples.append(" ".join(jieba.lcut(raw.strip())))
                 else:
                     break
+            # 当前self.samples列表的长度，即它包含的分句后的句子的数量
             self.current_sample_num = len(self.samples)
             self.index = list(range(self.current_sample_num))
             if self.shuffle:
                 random.shuffle(self.samples)
+        # 调用一次__getitem__()函数，返回一个句子
         return sample
 
 def day_month(datetime_now):
@@ -673,3 +735,5 @@ class ModelWrapper(torch.nn.Module):
 
 
     
+
+# %%

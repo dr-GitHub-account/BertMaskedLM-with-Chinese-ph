@@ -20,18 +20,36 @@
 time=$(date "+%Y%m%d%H%M%S")
 output_time=${time}
 
-for repeat in 1;
+# for repeat in bbc1;
+# do
+# CUDA_VISIBLE_DEVICES=1 python train.py \
+#     --trainfile='./train_data/duie_ner_train_1_spo_noWork_text.txt' \
+#     --batchsize=32 \
+#     --epoch=5 \
+#     --showstep=400 \
+#     --usegpu=1 \
+#     --modelname='bert' \
+#     --vocabpath='./prev_trained_model/bert-base-chinese/vocab.txt' \
+#     --loadmodel='./prev_trained_model/bert-base-chinese' \
+#     --outputinfo=${output_time}_${repeat} \
+#     --corpusname='duie'
+# done
+
+# batchsize=16 for rbtl, 4 for brief print
+
+for repeat in rbtl1;
 do
-CUDA_VISIBLE_DEVICES=0 python train.py \
+CUDA_VISIBLE_DEVICES=1 python train.py \
     --trainfile='./train_data/duie_ner_train_1_spo_noWork_text.txt' \
-    --batchsize=8 \
+    --batchsize=4 \
     --epoch=5 \
-    --showstep=100000 \
+    --showstep=400 \
     --usegpu=1 \
     --modelname='bert' \
-    --vocabpath='./prev_trained_model/bert-base-chinese/vocab.txt' \
-    --loadmodel='./prev_trained_model/bert-base-chinese' \
-    --outputinfo=${output_time}_${repeat} 
+    --vocabpath='./prev_trained_model/chinese-roberta-wwm-ext-large/vocab.txt' \
+    --loadmodel='./prev_trained_model/chinese-roberta-wwm-ext-large' \
+    --outputinfo=${output_time}_${repeat} \
+    --corpusname='duie'
 done
 
 # ====== finetune by jobdata.txt

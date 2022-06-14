@@ -1,0 +1,5 @@
+*****Running model = BertForMaskedLM.from_pretrained(args.loadmodel)*****
+The Initial Date = 6-13
+bert is training which based on corpus ./train_data/duie_ner_train_1_spo_noWork_text.txt
+The log information is saved in : ./log/bert/duie_ner_train_1_spo_noWork_text_20220613101521_1_train_log.txt
+epoch = 0

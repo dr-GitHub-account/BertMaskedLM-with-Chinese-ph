@@ -47,7 +47,7 @@ def parse_args():
                         default="./testdata/stard1w.txt", 
                         help='training data path')
     parser.add_argument('--savemodel', type=str, 
-                        default='./modelfile/MN/', 
+                        default='./checkpoints/MN/', 
                         help='model file save path')
     parser.add_argument('--mode',type=str,
                         default='word',
@@ -174,8 +174,10 @@ elif args.modelname=='bert':
         logger.info("*****Running model = BertForMaskedLM.from_pretrained(args.loadmodel)*****")
         # from_pretrained返回加载了权重的model，至此，需训练的model被定义好了
         model = BertForMaskedLM.from_pretrained(args.loadmodel)
+# transfer并没有被用到
 transfer = tokenizer.tokenizer.convert_ids_to_tokens
 
+# 默认单卡
 multi_gpu = False
 # 默认进入下面的if，设置显卡相关
 if bool(args.usegpu)==True and args.device:
@@ -198,6 +200,9 @@ else:
     device = torch.device("cpu")
 
 # args.trainfile is the training data file, default="./testdata/stard1w.txt"
+# MyDataset类对象trainset在train()函数调用时，作为corpus参数被传入
+# 而corpus在每一轮中都被用来初始化Data.DataLoader类对象train_iter
+# 此时就会用到MyDataset类对象trainset的__getitem__()函数，一次返回一个句子
 trainset = MyDataset(args.trainfile, n_raws=1000, shuffle=True)
 
 time0 = time.time()
@@ -217,7 +222,9 @@ curstep = int(args.curstep) if args.curepoch else -1
     
 #%%
 # 此步骤会进行jieba分词与打乱顺序
-# trainset在train()函数调用时，作为corpus参数被传入
+# MyDataset类对象trainset在train()函数调用时，作为corpus参数被传入
+# 而corpus在每一轮中都被用来初始化Data.DataLoader类对象train_iter
+# 此时就会用到MyDataset类对象trainset的__getitem__()函数，一次返回一个句子
 trainset.initial()
 
 # 训练函数
@@ -243,6 +250,7 @@ def train(model,
         
         # 遍历一轮中的每个batch
         for gg, data in enumerate(train_iter):
+            # 默认不进入下面的if，从中间的step开始训练时，才进入
             if gg < curstep:
                 continue
             # 默认不进入下面的if，默认modelname为'bert'
@@ -277,6 +285,7 @@ def train(model,
                 #         # 其中，inputs有15%的几率被mask，而所有的mask中，有80%的几率用'[mask]'进行替代，有10%用随机词进行替代，剩下10%保留原形
                 #         inputs['input_ids'],labels = self.collate_fn(inputs['input_ids'], p_mask=p_mask)
                 #     return inputs,labels
+                # 得到的inputs,labels里，inputs['input_ids'], labels均是mask(0.8-0.1-0.1形式)过后的结果
                 inputs,labels = tokenizer.tokenize(data, max_length=maxlength, p_mask=0.15)
                 if ee == 0 and gg == 0:
                     logger.info("*****For ee == 0, gg == 0:*****")
@@ -293,6 +302,14 @@ def train(model,
                     inputs = inputs.to(device)
                     labels = labels.to(device)
                 # 模型前向传播，返回MaskedLMOutput类对象outputs，outputs含有成员变量logits, loss
+                # BertForMaskedLM输出：
+                # return MaskedLMOutput(
+                #     loss=masked_lm_loss,
+                #     logits=prediction_scores,
+                #     hidden_states=outputs.hidden_states,
+                #     attentions=outputs.attentions,
+                # )
+                # 其中logits=prediction_scores维度(batch_size, max_len, vocab_size)
                 outputs = model(**inputs, labels=labels)
                 # np.shape(labels): torch.Size([batch_size, max_len])，其中被mask的token相应label不为-100
                 # 得到的masked_label为一个一维张量，如tensor([  704, 14966])，其中每一个元素都是一个mask的label的id
@@ -309,8 +326,9 @@ def train(model,
                 # 根据单卡还是多卡来进行处理outputs.loss，进而得到损失
                 loss = outputs.loss.mean() if multi_gpu else outputs.loss
                 # tensorboard相关
-                if gg%(0.1*args.showstep)==9:
-                    info2 = bertshow_predict_vs_actual(inputs, labels, outputs)
+                if gg%(args.showstep)==0 and gg//(args.showstep)!=0:
+                    pass
+                    # info2 = bertshow_predict_vs_actual(inputs, labels, outputs)
                     # tb_writer.add_text('predict-vs-actural',info2,ee*len(train_iter)+gg)
                     # tb_writer.close()
             # tensorboard相关
@@ -329,7 +347,9 @@ def train(model,
             # 当前batch的accuracy累加到runacc上
             runacc += accuracy
             optimizer.state.get("")
-            if gg%(0.1*args.showstep)==9:
+            # 每经过一定的iteration，记录一下
+            # if gg%(0.1*args.showstep)==9:
+            if gg%(args.showstep)==0 and gg//(args.showstep)!=0:
                 time1 = time.time()
                 logger.info('\t batch = %d \t loss = %.5f \t acc = %.3f \t cost_time = %.3fs'%(
                              gg,loss.item(),accuracy,time1-time0))
@@ -343,29 +363,42 @@ def train(model,
             loss.backward()
             # 更新参数
             optimizer.step()
-            # **************************202206121708**************************
-            if gg>100:
-                break
+            # 若step数超过100，则跳出此epoch的循环，进入下一epoch的训练
+            # 为什么这样做？100是否太小了？
+            # if gg>100:
+            #     break
             
-            if gg % args.showstep == 0:
-                save_path1 = os.path.join(args.savemodel.replace('MN',args.modelname),
-                                          '%s_%s_%s_step_%d.bin'%(args.modelname,
-                                                                  args.corpusname,args.mode,gg))
-                if hasattr(model,'module'):
-                    model.module.save_pretrained(save_path1)
-                else:
-                    model.save_pretrained(save_path1)
-        save_path2 = os.path.join(args.savemodel.replace('MN',args.modelname),
+            # 若step数达到args.showstep的倍数，则保存权重
+            # if gg % args.showstep == 0:
+            #     # save_path1是step数达到args.showstep的倍数时保存权重的路径
+            #     save_path1 = os.path.join(args.savemodel.replace('MN',args.modelname),
+            #                               '%s_%s_%s_step_%d.bin'%(args.modelname,
+            #                                                       args.corpusname,args.mode,gg))
+            #     # 保存模型
+            #     if hasattr(model,'module'):
+            #         model.module.save_pretrained(save_path1)
+            #     else:
+            #         model.save_pretrained(save_path1)
+        
+        # save_path2是每一epoch末尾保存权重的路径
+        save_path2_pre = args.savemodel.replace('MN',args.modelname + args.outputinfo)
+        if not os.path.exists(save_path2_pre):
+            os.mkdir(save_path2_pre)
+        save_path2 = os.path.join(save_path2_pre,
                                   '%s_%s_%s_epoch_%d.bin'%(args.modelname,
                                                            args.corpusname,args.mode,ee))
+        # 保存模型
         if hasattr(model,'module'):
             model.module.save_pretrained(save_path2)
         else:
             model.save_pretrained(save_path2)
+        # 记录当前轮模型的保存
         logger.info('we get model %s'%save_path2)
     # logger.info('tensorboard information has been recorded in %s'%tb_dir)
+    # 记录训练结束
     logger.info('training done!')
 
+# 开始训练
 train(model=model, corpus=trainset)
 # tb_writer.close()
 

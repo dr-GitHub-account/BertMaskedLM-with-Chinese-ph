@@ -1,0 +1,95 @@
+*****Running model = BertForMaskedLM.from_pretrained(args.loadmodel)*****
+The Initial Date = 6-13
+bert is training which based on corpus ./train_data/duie_ner_train_1_spo_noWork_text.txt
+The log information is saved in : ./log/bert/duie_ner_train_1_spo_noWork_text_20220613101713_1_train_log.txt
+epoch = 0
+	 batch = 400 	 loss = 4.31676 	 acc = 0.362 	 cost_time = 63.782s
+	 batch = 800 	 loss = 3.79249 	 acc = 0.446 	 cost_time = 126.342s
+	 batch = 1200 	 loss = 3.15405 	 acc = 0.516 	 cost_time = 189.451s
+	 batch = 1600 	 loss = 3.20281 	 acc = 0.494 	 cost_time = 252.553s
+	 batch = 2000 	 loss = 3.03233 	 acc = 0.529 	 cost_time = 315.743s
+	 batch = 2400 	 loss = 2.71475 	 acc = 0.541 	 cost_time = 378.872s
+	 batch = 2800 	 loss = 2.55135 	 acc = 0.587 	 cost_time = 441.763s
+	 batch = 3200 	 loss = 2.43327 	 acc = 0.572 	 cost_time = 504.817s
+*****For ee == 0, gg == 3252:*****
+*****inputs: {'input_ids': tensor([[  101,  7770, 14828,  ...,   138,   122,   102],
+        [  101,  8432,  2399,  ...,     0,     0,     0],
+        [  101,  8020,   103,  ...,     0,     0,     0],
+        ...,
+        [  101,  5326,   517,  ...,     0,     0,     0],
+        [  101,  4374, 20949,  ...,     0,     0,     0],
+        [  101,  1453, 17778,  ...,     0,     0,     0]]), 'token_type_ids': tensor([[0, 0, 0,  ..., 0, 0, 0],
+        [0, 0, 0,  ..., 0, 0, 0],
+        [0, 0, 0,  ..., 0, 0, 0],
+        ...,
+        [0, 0, 0,  ..., 0, 0, 0],
+        [0, 0, 0,  ..., 0, 0, 0],
+        [0, 0, 0,  ..., 0, 0, 0]]), 'attention_mask': tensor([[1, 1, 1,  ..., 1, 1, 1],
+        [1, 1, 1,  ..., 0, 0, 0],
+        [1, 1, 1,  ..., 0, 0, 0],
+        ...,
+        [1, 1, 1,  ..., 0, 0, 0],
+        [1, 1, 1,  ..., 0, 0, 0],
+        [1, 1, 1,  ..., 0, 0, 0]])}*****
+*****np.shape(inputs): (3,)*****
+*****np.shape(inputs['input_ids']): torch.Size([32, 128])*****
+*****np.shape(inputs['token_type_ids']): torch.Size([32, 128])*****
+*****np.shape(inputs['attention_mask']): torch.Size([32, 128])*****
+*****labels: tensor([[ -100,  -100,  -100,  ...,  -100,  -100,  -100],
+        [ -100,  -100,  -100,  ...,  -100,  -100,  -100],
+        [ -100,  -100,  1745,  ...,  -100,  -100,  -100],
+        ...,
+        [ -100,  -100,  -100,  ...,  -100,  -100,  -100],
+        [ -100,  -100, 14545,  ...,  -100,  -100,  -100],
+        [ -100,  -100, 13731,  ...,  -100,  -100,  -100]])*****
+*****np.shape(labels): torch.Size([32, 128])*****
+*****For ee == 0, gg == 3253:*****
+*****inputs: {'input_ids': tensor([[  101,  3805, 14526,  ...,     0,     0,     0],
+        [  101,  3862, 21044,  ..., 15635,  3946,   102],
+        [  101,  6163, 18447,  ...,     0,     0,     0],
+        ...,
+        [  101,   677, 20538,  ...,     0,     0,     0],
+        [  101,   517,  4182,  ...,     0,     0,     0],
+        [  101,  4906, 15461,  ...,     0,     0,     0]]), 'token_type_ids': tensor([[0, 0, 0,  ..., 0, 0, 0],
+        [0, 0, 0,  ..., 0, 0, 0],
+        [0, 0, 0,  ..., 0, 0, 0],
+        ...,
+        [0, 0, 0,  ..., 0, 0, 0],
+        [0, 0, 0,  ..., 0, 0, 0],
+        [0, 0, 0,  ..., 0, 0, 0]]), 'attention_mask': tensor([[1, 1, 1,  ..., 0, 0, 0],
+        [1, 1, 1,  ..., 1, 1, 1],
+        [1, 1, 1,  ..., 0, 0, 0],
+        ...,
+        [1, 1, 1,  ..., 0, 0, 0],
+        [1, 1, 1,  ..., 0, 0, 0],
+        [1, 1, 1,  ..., 0, 0, 0]])}*****
+*****np.shape(inputs): (3,)*****
+*****np.shape(inputs['input_ids']): torch.Size([14, 128])*****
+*****np.shape(inputs['token_type_ids']): torch.Size([14, 128])*****
+*****np.shape(inputs['attention_mask']): torch.Size([14, 128])*****
+*****labels: tensor([[-100, -100, -100,  ..., -100, -100, -100],
+        [-100, -100, -100,  ..., -100, -100, -100],
+        [-100, -100, -100,  ..., -100, -100, -100],
+        ...,
+        [-100, -100, -100,  ..., -100, -100, -100],
+        [-100, -100, -100,  ..., -100, -100, -100],
+        [-100, -100, -100,  ..., -100, -100, -100]])*****
+*****np.shape(labels): torch.Size([14, 128])*****
+we get model ./checkpoints/bert/bert_duie_word_epoch_0.bin
+epoch = 1
+	 batch = 400 	 loss = 2.59693 	 acc = 0.602 	 cost_time = 577.422s
+	 batch = 800 	 loss = 2.53162 	 acc = 0.584 	 cost_time = 640.718s
+	 batch = 1200 	 loss = 2.75485 	 acc = 0.548 	 cost_time = 703.746s
+	 batch = 1600 	 loss = 2.20166 	 acc = 0.610 	 cost_time = 766.436s
+	 batch = 2000 	 loss = 2.22881 	 acc = 0.619 	 cost_time = 829.188s
+	 batch = 2400 	 loss = 2.41388 	 acc = 0.582 	 cost_time = 892.906s
+	 batch = 2800 	 loss = 2.19857 	 acc = 0.634 	 cost_time = 956.237s
+	 batch = 3200 	 loss = 1.87034 	 acc = 0.683 	 cost_time = 1018.820s
+we get model ./checkpoints/bert/bert_duie_word_epoch_1.bin
+epoch = 2
+	 batch = 400 	 loss = 2.27328 	 acc = 0.616 	 cost_time = 1091.131s
+	 batch = 800 	 loss = 1.68753 	 acc = 0.692 	 cost_time = 1154.152s
+	 batch = 1200 	 loss = 1.80029 	 acc = 0.678 	 cost_time = 1216.878s
+	 batch = 1600 	 loss = 1.78813 	 acc = 0.686 	 cost_time = 1280.206s
+	 batch = 2000 	 loss = 1.78773 	 acc = 0.675 	 cost_time = 1343.049s
+	 batch = 2400 	 loss = 1.87928 	 acc = 0.655 	 cost_time = 1406.430s
