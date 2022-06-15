@@ -1,0 +1,129 @@
+*****Running model = BertForMaskedLM.from_pretrained(args.loadmodel)*****
+The Initial Date = 6-15
+bert is training which based on corpus ./train_data/duie_ner_train_1_spo_noWork_text.txt
+The log information is saved in : ./log/bert/duie_ner_train_1_spo_noWork_text_20220615163959_rbtl1_train_log.txt
+epoch = 0
+
+
+*****For ee == 0, gg == 0:*****
+*****inputs: {'input_ids': tensor([[ 101, 3300,  782,  ...,    0,    0,    0],
+        [ 101, 2002, 4696,  ...,    0,    0,    0],
+        [ 101, 2408,  691,  ...,    0,    0,    0],
+        ...,
+        [ 101,  791, 2399,  ...,    0,    0,    0],
+        [ 101,  517,  103,  ...,    0,    0,    0],
+        [ 101, 5439, 2094,  ...,    0,    0,    0]]), 'token_type_ids': tensor([[0, 0, 0,  ..., 0, 0, 0],
+        [0, 0, 0,  ..., 0, 0, 0],
+        [0, 0, 0,  ..., 0, 0, 0],
+        ...,
+        [0, 0, 0,  ..., 0, 0, 0],
+        [0, 0, 0,  ..., 0, 0, 0],
+        [0, 0, 0,  ..., 0, 0, 0]]), 'attention_mask': tensor([[1, 1, 1,  ..., 0, 0, 0],
+        [1, 1, 1,  ..., 0, 0, 0],
+        [1, 1, 1,  ..., 0, 0, 0],
+        ...,
+        [1, 1, 1,  ..., 0, 0, 0],
+        [1, 1, 1,  ..., 0, 0, 0],
+        [1, 1, 1,  ..., 0, 0, 0]])}*****
+*****np.shape(inputs): (3,)*****
+*****np.shape(inputs['input_ids']): torch.Size([16, 128])*****
+*****np.shape(inputs['token_type_ids']): torch.Size([16, 128])*****
+*****np.shape(inputs['attention_mask']): torch.Size([16, 128])*****
+*****labels: tensor([[-100, -100, -100,  ..., -100, -100, -100],
+        [-100, -100, -100,  ..., -100, -100, -100],
+        [-100, -100, -100,  ..., -100, -100, -100],
+        ...,
+        [-100, -100, -100,  ..., -100, -100, -100],
+        [-100, -100, 3680,  ..., -100, -100, -100],
+        [-100, -100, -100,  ..., -100, -100, -100]])*****
+*****np.shape(labels): torch.Size([16, 128])*****
+	 batch = 400 	 loss = 3.56054 	 acc = 0.404 	 cost_time = 86.580s
+	 batch = 800 	 loss = 2.31869 	 acc = 0.562 	 cost_time = 173.816s
+	 batch = 1200 	 loss = 2.71009 	 acc = 0.554 	 cost_time = 261.161s
+	 batch = 1600 	 loss = 2.14891 	 acc = 0.647 	 cost_time = 348.294s
+	 batch = 2000 	 loss = 1.98131 	 acc = 0.610 	 cost_time = 435.876s
+	 batch = 2400 	 loss = 1.85155 	 acc = 0.659 	 cost_time = 523.292s
+	 batch = 2800 	 loss = 1.88371 	 acc = 0.667 	 cost_time = 610.992s
+	 batch = 3200 	 loss = 1.79380 	 acc = 0.662 	 cost_time = 699.224s
+	 batch = 3600 	 loss = 2.14159 	 acc = 0.595 	 cost_time = 787.740s
+	 batch = 4000 	 loss = 1.77573 	 acc = 0.657 	 cost_time = 875.752s
+	 batch = 4400 	 loss = 1.30369 	 acc = 0.755 	 cost_time = 963.631s
+	 batch = 4800 	 loss = 1.47285 	 acc = 0.713 	 cost_time = 1051.413s
+	 batch = 5200 	 loss = 1.39961 	 acc = 0.688 	 cost_time = 1139.211s
+	 batch = 5600 	 loss = 1.31467 	 acc = 0.737 	 cost_time = 1226.847s
+	 batch = 6000 	 loss = 1.52901 	 acc = 0.709 	 cost_time = 1314.673s
+	 batch = 6400 	 loss = 1.44280 	 acc = 0.764 	 cost_time = 1403.035s
+we get model ./checkpoints/bert20220615163959_rbtl1/bert_duie_word_epoch_0.bin
+epoch = 1
+	 batch = 400 	 loss = 1.07152 	 acc = 0.779 	 cost_time = 1516.643s
+	 batch = 800 	 loss = 1.94001 	 acc = 0.633 	 cost_time = 1604.689s
+	 batch = 1200 	 loss = 1.46056 	 acc = 0.743 	 cost_time = 1692.426s
+	 batch = 1600 	 loss = 1.42888 	 acc = 0.698 	 cost_time = 1779.989s
+	 batch = 2000 	 loss = 1.44822 	 acc = 0.702 	 cost_time = 1867.915s
+	 batch = 2400 	 loss = 1.58636 	 acc = 0.678 	 cost_time = 1956.396s
+	 batch = 2800 	 loss = 1.47608 	 acc = 0.707 	 cost_time = 2044.506s
+	 batch = 3200 	 loss = 0.90637 	 acc = 0.838 	 cost_time = 2132.304s
+	 batch = 3600 	 loss = 1.16917 	 acc = 0.770 	 cost_time = 2219.876s
+	 batch = 4000 	 loss = 1.37625 	 acc = 0.728 	 cost_time = 2307.543s
+	 batch = 4400 	 loss = 1.39155 	 acc = 0.671 	 cost_time = 2394.437s
+	 batch = 4800 	 loss = 1.32939 	 acc = 0.748 	 cost_time = 2481.912s
+	 batch = 5200 	 loss = 1.14334 	 acc = 0.716 	 cost_time = 2569.581s
+	 batch = 5600 	 loss = 1.09717 	 acc = 0.767 	 cost_time = 2656.794s
+	 batch = 6000 	 loss = 1.36683 	 acc = 0.738 	 cost_time = 2744.647s
+	 batch = 6400 	 loss = 1.46291 	 acc = 0.720 	 cost_time = 2832.929s
+we get model ./checkpoints/bert20220615163959_rbtl1/bert_duie_word_epoch_1.bin
+epoch = 2
+	 batch = 400 	 loss = 1.40740 	 acc = 0.740 	 cost_time = 2945.507s
+	 batch = 800 	 loss = 1.02842 	 acc = 0.740 	 cost_time = 3033.576s
+	 batch = 1200 	 loss = 1.15643 	 acc = 0.777 	 cost_time = 3121.549s
+	 batch = 1600 	 loss = 1.40518 	 acc = 0.694 	 cost_time = 3209.082s
+	 batch = 2000 	 loss = 1.60632 	 acc = 0.702 	 cost_time = 3296.207s
+	 batch = 2400 	 loss = 1.56669 	 acc = 0.683 	 cost_time = 3384.666s
+	 batch = 2800 	 loss = 1.65600 	 acc = 0.659 	 cost_time = 3473.174s
+	 batch = 3200 	 loss = 0.82593 	 acc = 0.828 	 cost_time = 3561.399s
+	 batch = 3600 	 loss = 1.41985 	 acc = 0.678 	 cost_time = 3649.575s
+	 batch = 4000 	 loss = 1.73539 	 acc = 0.647 	 cost_time = 3737.562s
+	 batch = 4400 	 loss = 1.35705 	 acc = 0.729 	 cost_time = 3825.203s
+	 batch = 4800 	 loss = 1.17987 	 acc = 0.764 	 cost_time = 3913.016s
+	 batch = 5200 	 loss = 0.93604 	 acc = 0.780 	 cost_time = 4000.919s
+	 batch = 5600 	 loss = 1.03700 	 acc = 0.763 	 cost_time = 4089.342s
+	 batch = 6000 	 loss = 1.31719 	 acc = 0.735 	 cost_time = 4177.909s
+	 batch = 6400 	 loss = 1.13382 	 acc = 0.748 	 cost_time = 4265.791s
+we get model ./checkpoints/bert20220615163959_rbtl1/bert_duie_word_epoch_2.bin
+epoch = 3
+	 batch = 400 	 loss = 1.12056 	 acc = 0.761 	 cost_time = 4378.473s
+	 batch = 800 	 loss = 1.75386 	 acc = 0.644 	 cost_time = 4466.210s
+	 batch = 1200 	 loss = 1.42082 	 acc = 0.709 	 cost_time = 4553.730s
+	 batch = 1600 	 loss = 1.30320 	 acc = 0.746 	 cost_time = 4641.808s
+	 batch = 2000 	 loss = 1.13039 	 acc = 0.740 	 cost_time = 4730.088s
+	 batch = 2400 	 loss = 1.20427 	 acc = 0.752 	 cost_time = 4818.181s
+	 batch = 2800 	 loss = 1.78823 	 acc = 0.676 	 cost_time = 4906.420s
+	 batch = 3200 	 loss = 1.00374 	 acc = 0.779 	 cost_time = 4994.217s
+	 batch = 3600 	 loss = 1.33374 	 acc = 0.750 	 cost_time = 5081.938s
+	 batch = 4000 	 loss = 1.75967 	 acc = 0.683 	 cost_time = 5169.814s
+	 batch = 4400 	 loss = 1.16834 	 acc = 0.748 	 cost_time = 5257.600s
+	 batch = 4800 	 loss = 1.09153 	 acc = 0.743 	 cost_time = 5345.327s
+	 batch = 5200 	 loss = 1.07605 	 acc = 0.770 	 cost_time = 5433.052s
+	 batch = 5600 	 loss = 0.98303 	 acc = 0.784 	 cost_time = 5521.154s
+	 batch = 6000 	 loss = 1.34488 	 acc = 0.705 	 cost_time = 5609.450s
+	 batch = 6400 	 loss = 1.22536 	 acc = 0.813 	 cost_time = 5697.915s
+we get model ./checkpoints/bert20220615163959_rbtl1/bert_duie_word_epoch_3.bin
+epoch = 4
+	 batch = 400 	 loss = 0.83839 	 acc = 0.800 	 cost_time = 5811.011s
+	 batch = 800 	 loss = 1.34959 	 acc = 0.717 	 cost_time = 5899.005s
+	 batch = 1200 	 loss = 1.23459 	 acc = 0.724 	 cost_time = 5986.611s
+	 batch = 1600 	 loss = 1.32864 	 acc = 0.783 	 cost_time = 6074.260s
+	 batch = 2000 	 loss = 1.17096 	 acc = 0.773 	 cost_time = 6162.364s
+	 batch = 2400 	 loss = 1.43632 	 acc = 0.669 	 cost_time = 6250.682s
+	 batch = 2800 	 loss = 1.16725 	 acc = 0.778 	 cost_time = 6338.688s
+	 batch = 3200 	 loss = 0.78838 	 acc = 0.806 	 cost_time = 6426.624s
+	 batch = 3600 	 loss = 0.74804 	 acc = 0.847 	 cost_time = 6515.363s
+	 batch = 4000 	 loss = 1.02237 	 acc = 0.781 	 cost_time = 6602.903s
+	 batch = 4400 	 loss = 1.16503 	 acc = 0.735 	 cost_time = 6690.613s
+	 batch = 4800 	 loss = 0.99224 	 acc = 0.797 	 cost_time = 6778.326s
+	 batch = 5200 	 loss = 1.36888 	 acc = 0.713 	 cost_time = 6867.121s
+	 batch = 5600 	 loss = 1.03012 	 acc = 0.769 	 cost_time = 6955.650s
+	 batch = 6000 	 loss = 1.35529 	 acc = 0.696 	 cost_time = 7044.152s
+	 batch = 6400 	 loss = 1.16697 	 acc = 0.756 	 cost_time = 7132.021s
+we get model ./checkpoints/bert20220615163959_rbtl1/bert_duie_word_epoch_4.bin
+training done!

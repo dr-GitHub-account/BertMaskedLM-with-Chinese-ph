@@ -20,6 +20,7 @@ from transformers import AdamW
 import torch.utils.data as Data
 from transformers import GPT2Config,BertConfig
 from transformers import GPT2LMHeadModel,BertForMaskedLM
+
 from utils import (calculate_loss_and_accuracy,GptTokenTool,BertTokenTool,
                    MyDataset,day_month,ModelWrapper,bertshow_predict_vs_actual)
 # from torch.utils.tensorboard import SummaryWriter
@@ -287,7 +288,9 @@ def train(model,
                 #     return inputs,labels
                 # 得到的inputs,labels里，inputs['input_ids'], labels均是mask(0.8-0.1-0.1形式)过后的结果
                 inputs,labels = tokenizer.tokenize(data, max_length=maxlength, p_mask=0.15)
+                
                 if ee == 0 and gg == 0:
+                    logger.info("\n")
                     logger.info("*****For ee == 0, gg == 0:*****")
                     logger.info("*****inputs: {}*****".format(inputs))
                     logger.info("*****np.shape(inputs): {}*****".format(np.shape(inputs)))
@@ -296,25 +299,36 @@ def train(model,
                     logger.info("*****np.shape(inputs['attention_mask']): {}*****".format(np.shape(inputs['attention_mask'])))
                     logger.info("*****labels: {}*****".format(labels))
                     logger.info("*****np.shape(labels): {}*****".format(np.shape(labels)))
+                    
+                    # labels_token = [['default'] * len(labels[0])] * len(labels)
+                    # for i in range(len(labels)):
+                    #     for j in range(len(labels[0])):
+                    #         labels_token[i][j] = tokenizer.tokenizer._convert_id_to_token(labels[i][j])
+                            
+                    # logger.info("*****labels_token: {}*****".format(labels_token))
+                    # logger.info("*****np.shape(labels_token): {}*****".format(np.shape(labels_token)))
                 
                 # 默认使用gpu，进入下面的if
                 if str(device)=='cuda':
                     inputs = inputs.to(device)
                     labels = labels.to(device)
                 # 模型前向传播，返回MaskedLMOutput类对象outputs，outputs含有成员变量logits, loss
-                # BertForMaskedLM输出：
+                # BertForMaskedLM的forward函数返回：
                 # return MaskedLMOutput(
                 #     loss=masked_lm_loss,
                 #     logits=prediction_scores,
                 #     hidden_states=outputs.hidden_states,
                 #     attentions=outputs.attentions,
                 # )
-                # 其中logits=prediction_scores维度(batch_size, max_len, vocab_size)
+                # outputs.logits维度torch.Size([batch_size, max_len, vocab_size])
                 outputs = model(**inputs, labels=labels)
                 # np.shape(labels): torch.Size([batch_size, max_len])，其中被mask的token相应label不为-100
-                # 得到的masked_label为一个一维张量，如tensor([  704, 14966])，其中每一个元素都是一个mask的label的id
+                # 得到的masked_label为一个一维张量，其中每一个元素都是一个mask的label的id
+                # masked_label维度torch.Size([num_mask]), num_mask为labels中不为-100的元素的个数，即masked_label是把labels这个二维张量中所有不为-100的元素拿出来展成一个一维张量
+                # 不同batch，masked_label维度可能不一样，因为各句子长度不一样，mask的比例一样，那么mask的个数就不一样
                 masked_label = labels[labels != -100]
                 # mask的预测结果
+                # masked_pre维度torch.Size([num_mask]), num_mask为labels中不为-100的元素的个数
                 masked_pre = outputs.logits[labels != -100].max(-1).indices
                 # masked_label.numel()为一维张量masked_label中包含元素的个数，即mask的个数
                 # 如果masked_label.numel()为0则代表当前没有mask
@@ -324,6 +338,7 @@ def train(model,
                 else:
                     accuracy = (torch.sum(masked_pre==masked_label)/masked_label.numel()).item()
                 # 根据单卡还是多卡来进行处理outputs.loss，进而得到损失
+                # 单卡outputs.loss为一标量
                 loss = outputs.loss.mean() if multi_gpu else outputs.loss
                 # tensorboard相关
                 if gg%(args.showstep)==0 and gg//(args.showstep)!=0:

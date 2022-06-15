@@ -41,7 +41,7 @@ for repeat in rbtl1;
 do
 CUDA_VISIBLE_DEVICES=1 python train.py \
     --trainfile='./train_data/duie_ner_train_1_spo_noWork_text.txt' \
-    --batchsize=4 \
+    --batchsize=16 \
     --epoch=5 \
     --showstep=400 \
     --usegpu=1 \

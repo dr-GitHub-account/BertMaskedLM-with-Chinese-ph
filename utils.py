@@ -538,29 +538,29 @@ class BertTokenTool:
         inputs[indices_random] = random_words[indices_random]
         if self.flag == 0:
             
-            print("*****special_tokens_mask: {}*****".format(special_tokens_mask))
-            print("*****np.shape(special_tokens_mask): {}*****".format(np.shape(special_tokens_mask)))
+            # print("*****special_tokens_mask: {}*****".format(special_tokens_mask))
+            # print("*****np.shape(special_tokens_mask): {}*****".format(np.shape(special_tokens_mask)))
             
-            print("*****probability_matrix: {}*****".format(probability_matrix))
-            print("*****np.shape(probability_matrix): {}*****".format(np.shape(probability_matrix)))
+            # print("*****probability_matrix: {}*****".format(probability_matrix))
+            # print("*****np.shape(probability_matrix): {}*****".format(np.shape(probability_matrix)))
             
-            print("*****masked_indices: {}*****".format(masked_indices))
-            print("*****np.shape(masked_indices): {}*****".format(np.shape(masked_indices)))
+            # print("*****masked_indices: {}*****".format(masked_indices))
+            # print("*****np.shape(masked_indices): {}*****".format(np.shape(masked_indices)))
             
-            print("*****labels: {}*****".format(labels))
-            print("*****np.shape(labels): {}*****".format(np.shape(labels)))
+            # print("*****labels: {}*****".format(labels))
+            # print("*****np.shape(labels): {}*****".format(np.shape(labels)))
             
-            print("*****indices_replaced: {}*****".format(indices_replaced))
-            print("*****np.shape(indices_replaced): {}*****".format(np.shape(indices_replaced)))
+            # print("*****indices_replaced: {}*****".format(indices_replaced))
+            # print("*****np.shape(indices_replaced): {}*****".format(np.shape(indices_replaced)))
             
-            print("*****indices_random: {}*****".format(indices_random))
-            print("*****np.shape(indices_random): {}*****".format(np.shape(indices_random)))
+            # print("*****indices_random: {}*****".format(indices_random))
+            # print("*****np.shape(indices_random): {}*****".format(np.shape(indices_random)))
             
-            print("*****random_words: {}*****".format(random_words))
-            print("*****np.shape(random_words): {}*****".format(np.shape(random_words)))
+            # print("*****random_words: {}*****".format(random_words))
+            # print("*****np.shape(random_words): {}*****".format(np.shape(random_words)))
             
-            print("*****inputs: {}*****".format(inputs))
-            print("*****np.shape(inputs): {}*****".format(np.shape(inputs)))
+            # print("*****inputs: {}*****".format(inputs))
+            # print("*****np.shape(inputs): {}*****".format(np.shape(inputs)))
             
             self.flag = 1
         return inputs, labels
@@ -637,9 +637,11 @@ class MyDataset(Data.Dataset):
         for _ in range(self.n_raws):
             # for循环循环self.n_raws次，for循环每循环一次，则读取一行的内容，赋值给raw
             raw = self.file_input.readline()
-            # 将当前raw进行精确模式分词(不存在冗余的分词)，得到该句分词后的结果列表，添加到self.samples列表中
             if raw:
-                self.samples.append(" ".join(jieba.lcut(raw.strip())))
+                # 将当前raw进行精确模式分词(不存在冗余的分词)，得到该句分词后的结果列表，添加到self.samples列表中
+                # self.samples.append(" ".join(jieba.lcut(raw.strip())))
+                # 不分词直接添加
+                self.samples.append(" ".join(raw.strip()))
             else:
                 break
         # 当前self.samples列表的长度，即它包含的分句后的句子的数量
@@ -673,7 +675,9 @@ class MyDataset(Data.Dataset):
                 raw = self.file_input.readline()
                 if raw:
                     # 将当前raw进行精确模式分词(不存在冗余的分词)，得到该句分词后的结果列表，添加到self.samples列表中
-                    self.samples.append(" ".join(jieba.lcut(raw.strip())))
+                    # self.samples.append(" ".join(jieba.lcut(raw.strip())))
+                    # 不分词直接添加
+                    self.samples.append(" ".join(raw.strip()))
                 else:
                     break
             # 当前self.samples列表的长度，即它包含的分句后的句子的数量
